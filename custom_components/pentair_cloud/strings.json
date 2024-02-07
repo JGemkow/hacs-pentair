@@ -59,8 +59,20 @@
       "last_report": {
         "name": "Last report"
       },
-      "salt_level": {
-        "name": "Salt level"
+      "active_program_name": {
+        "name": "Active pump program name"
+      },
+      "active_program_number": {
+        "name": "Active pump program number"
+      },
+      "current_power_consumption": {
+        "name": "Current power consumption"
+      },
+      "current_motor_speed": {
+        "name": "Current motor speed"
+      },
+      "current_estimated_flow": {
+        "name": "Current estimated flow"
       }
     }
   }

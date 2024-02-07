@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from pypentair import PentairDevice
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -31,16 +33,14 @@ class PentairEntity(CoordinatorEntity[PentairDataUpdateCoordinator]):
         self._attr_unique_id = f"{device_id}-{description.key}"
 
         device = self.get_device()
-        info = device["productInfo"]
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},
-            manufacturer=info.get("maker"),
-            model=device["pname"]
-            + (f" ({model})" if (model := info.get("model")) else ""),
-            name=info["nickName"],
-            sw_version=device.get("currentFWVersion"),
+            manufacturer=device.maker,
+            model=device.model,
+            name=device.nickName,
+            sw_version=device.softwareVersion,
         )
 
-    def get_device(self) -> Any | None:
+    def get_device(self) -> PentairDevice | None:
         """Get the device from the coordinator."""
         return self.coordinator.get_device(self._device_id)

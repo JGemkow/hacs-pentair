@@ -14,7 +14,13 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfMass
+from homeassistant.const import (
+    PERCENTAGE,
+    EntityCategory,
+    UnitOfMass,
+    UnitOfPower,
+    UnitOfVolumeFlowRate,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.dt import UTC
@@ -47,7 +53,7 @@ SENSOR_MAP: dict[str | None, tuple[PentairSensorEntityDescription, ...]] = {
             device_class=SensorDeviceClass.TIMESTAMP,
             entity_category=EntityCategory.DIAGNOSTIC,
             translation_key="last_report",
-            value_fn=lambda data: convert_timestamp(data["lastReport"]),
+            value_fn=lambda device: device.lastReport,
         ),
     ),
     "PPA0": (
@@ -58,7 +64,7 @@ SENSOR_MAP: dict[str | None, tuple[PentairSensorEntityDescription, ...]] = {
             native_unit_of_measurement=PERCENTAGE,
             suggested_display_precision=1,
             translation_key="battery_level",
-            value_fn=lambda data: min(int(data["fields"]["bvl"]) * 100 / 8, 100),
+            value_fn=lambda device: device.batteryLevel,
         ),
     ),
     "SSS1": (
@@ -68,19 +74,61 @@ SENSOR_MAP: dict[str | None, tuple[PentairSensorEntityDescription, ...]] = {
             native_unit_of_measurement=UnitOfMass.POUNDS,
             state_class=SensorStateClass.MEASUREMENT,
             translation_key="average_salt_usage_per_day",
-            value_fn=lambda data: data["fields"]["average_salt_usage_per_day"],
+            value_fn=lambda device: device.averageSaltUsagePerDay,
         ),
         PentairSensorEntityDescription(
             key="battery_level",
             entity_category=EntityCategory.DIAGNOSTIC,
             icon="mdi:battery",
             translation_key="battery_level",
-            value_fn=lambda data: data["fields"]["battery_level"],
+            value_fn=lambda device: device.batteryLevel,
         ),
         PentairSensorEntityDescription(
             key="salt_level",
             translation_key="salt_level",
-            value_fn=lambda data: data["fields"]["salt_level"],
+            value_fn=lambda device: device.saltLevel,
+        ),
+    ),
+    "IF31": (
+        PentairSensorEntityDescription(
+            key="active_program_name",
+            translation_key="active_program_name",
+            value_fn=lambda device: device.activeProgramName
+            if device.activeProgramName is not None
+            else "Stopped",
+        ),
+        PentairSensorEntityDescription(
+            key="active_program_number",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            translation_key="active_program_number",
+            value_fn=lambda device: device.activeProgramNumber
+            if device.activeProgramNumber is not None
+            else 0,
+        ),
+        PentairSensorEntityDescription(
+            key="current_power_consumption",
+            device_class=SensorDeviceClass.POWER,
+            native_unit_of_measurement=UnitOfPower.WATT,
+            state_class=SensorStateClass.MEASUREMENT,
+            translation_key="current_power_consumption",
+            value_fn=lambda device: device.currentPowerConsumption,
+        ),
+        PentairSensorEntityDescription(
+            key="current_motor_speed",
+            device_class=SensorDeviceClass.SPEED,
+            native_unit_of_measurement=PERCENTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            translation_key="current_motor_speed",
+            value_fn=lambda device: device.currentMotorSpeed,
+        ),
+        PentairSensorEntityDescription(
+            key="current_estimated_flow",
+            device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
+            native_unit_of_measurement=UnitOfVolumeFlowRate.GALLONS_PER_MINUTE,
+            state_class=SensorStateClass.MEASUREMENT,
+            translation_key="current_estimated_flow",
+            icon="mdi:water-sync",
+            value_fn=lambda device: device.currentEstimatedFlow,
         ),
     ),
 }
@@ -99,12 +147,12 @@ async def async_setup_entry(
             coordinator=coordinator,
             config_entry=config_entry,
             description=description,
-            device_id=device["deviceId"],
+            device_id=device.deviceId,
         )
         for device in coordinator.get_devices()
         for device_type, descriptions in SENSOR_MAP.items()
         for description in descriptions
-        if device_type is None or device["deviceType"] == device_type
+        if device_type is None or device.deviceType == device_type
     ]
 
     if not entities:
