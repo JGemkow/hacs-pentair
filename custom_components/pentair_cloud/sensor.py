@@ -91,13 +91,6 @@ SENSOR_MAP: dict[str | None, tuple[PentairSensorEntityDescription, ...]] = {
     ),
     "IF31": (
         PentairSensorEntityDescription(
-            key="active_program_name",
-            translation_key="active_program_name",
-            value_fn=lambda device: device.activeProgramName
-            if device.activeProgramName is not None
-            else "Stopped",
-        ),
-        PentairSensorEntityDescription(
             key="active_program_number",
             entity_category=EntityCategory.DIAGNOSTIC,
             translation_key="active_program_number",

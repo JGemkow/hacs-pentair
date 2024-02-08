@@ -39,13 +39,27 @@ class PentairDataUpdateCoordinator(DataUpdateCoordinator):
             None,
         )
 
-    def get_devices(self, device_type: str | None = None) -> List(PentairDevice):
+    def get_devices(self, device_type: str | None = None) -> list[PentairDevice]:
         """Get devices by device type, if provided."""
         return [
             device
             for device in self.devices
             if device_type is None or device.deviceType == device_type
         ]
+
+    async def change_active_pump_program(
+        self, device: PentairDevice, programName: str
+    ) -> None:
+        """Update pump program based on name."""
+        programNumber = 0
+        if programName != "Stopped":
+            for program in device.enabledPrograms:
+                if program.name == programName:
+                    programNumber = program.id
+                    break
+        await self.hass.async_add_executor_job(
+            self.api.change_active_pump_program, device, programNumber
+        )
 
     async def _async_update_data(self):
         """Update data via library, refresh token if necessary."""

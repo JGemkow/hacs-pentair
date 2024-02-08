@@ -59,9 +59,6 @@
       "last_report": {
         "name": "Last report"
       },
-      "active_program_name": {
-        "name": "Active pump program name"
-      },
       "active_program_number": {
         "name": "Active pump program number"
       },
@@ -73,6 +70,11 @@
       },
       "current_estimated_flow": {
         "name": "Current estimated flow"
+      }
+    },
+    "select": {
+      "active_program_name": {
+        "name": "Active pump program name"
       }
     }
   }
